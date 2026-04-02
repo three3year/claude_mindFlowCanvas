@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Node Editor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toolbar">
+  <div id="add-node-dropdown" style="position:relative;">
+    <button id="add-node-btn" style="background:#6aaee0;color:#f0f4fa;">+ 新增節點</button>
+    <div id="add-node-menu">
+      <div class="menu-item" data-cat="styleWhite" style="border-left:3px solid #e0e0e0;">樣式白</div>
+      <div class="menu-item" data-cat="styleRed" style="border-left:3px solid #e06a6a;">樣式紅</div>
+      <div class="menu-item" data-cat="styleYellow" style="border-left:3px solid #e0d06a;">樣式黃</div>
+      <div class="menu-item" data-cat="styleGreen" style="border-left:3px solid #6ae07a;">樣式綠</div>
+      <div class="menu-item" data-cat="styleBlue" style="border-left:3px solid #6aaee0;">樣式藍</div>
+      <div class="menu-item" data-cat="stylePurple" style="border-left:3px solid #b06ed4;">樣式紫</div>
+      <div class="menu-item" data-cat="styleGray" style="border-left:3px solid #888888;">樣式灰</div>
+    </div>
+  </div>
+  <div class="separator"></div>
+  <button onclick="exportBlueprint()">匯出 Blueprint</button>
+  <button onclick="importBlueprint()">匯入 Blueprint</button>
+</div>
+<div id="filter-panel">
+  <label><input type="checkbox" checked id="filter-select-all">全選</label>
+  <hr style="border:none;border-top:1px solid #555;margin:2px 0;">
+  <label><input type="checkbox" checked data-filter="styleWhite"><span class="filter-dot" style="background:#e0e0e0;"></span>樣式白</label>
+  <label><input type="checkbox" checked data-filter="styleRed"><span class="filter-dot" style="background:#e06a6a;"></span>樣式紅</label>
+  <label><input type="checkbox" checked data-filter="styleYellow"><span class="filter-dot" style="background:#e0d06a;"></span>樣式黃</label>
+  <label><input type="checkbox" checked data-filter="styleGreen"><span class="filter-dot" style="background:#6ae07a;"></span>樣式綠</label>
+  <label><input type="checkbox" checked data-filter="styleBlue"><span class="filter-dot" style="background:#6aaee0;"></span>樣式藍</label>
+  <label><input type="checkbox" checked data-filter="stylePurple"><span class="filter-dot" style="background:#b06ed4;"></span>樣式紫</label>
+  <label><input type="checkbox" checked data-filter="styleGray"><span class="filter-dot" style="background:#888888;"></span>樣式灰</label>
+</div>
+<div id="canvas">
+  <canvas id="grid-canvas"></canvas>
+  <div id="canvas-inner">
+    <svg id="connections"></svg>
+    <div id="select-box"></div>
+  </div>
+</div>
+<div id="context-menu">
+  <div class="menu-label">屬性</div>
+  <div class="menu-item ctx-category" data-cat="styleWhite" style="border-left:3px solid #e0e0e0;">樣式白</div>
+  <div class="menu-item ctx-category" data-cat="styleRed" style="border-left:3px solid #e06a6a;">樣式紅</div>
+  <div class="menu-item ctx-category" data-cat="styleYellow" style="border-left:3px solid #e0d06a;">樣式黃</div>
+  <div class="menu-item ctx-category" data-cat="styleGreen" style="border-left:3px solid #6ae07a;">樣式綠</div>
+  <div class="menu-item ctx-category" data-cat="styleBlue" style="border-left:3px solid #6aaee0;">樣式藍</div>
+  <div class="menu-item ctx-category" data-cat="stylePurple" style="border-left:3px solid #b06ed4;">樣式紫</div>
+  <div class="menu-item ctx-category" data-cat="styleGray" style="border-left:3px solid #888888;">樣式灰</div>
+  <div class="menu-separator"></div>
+  <div class="menu-item" id="ctx-delete-node" style="color:#e06080;">刪除 Node</div>
+</div>
+<div id="canvas-context-menu">
+  <div class="menu-item submenu-parent" id="ctx-add-node">新增節點 ▸
+    <div class="submenu">
+      <div class="menu-item" data-add-cat="styleWhite" style="border-left:3px solid #e0e0e0;">樣式白</div>
+      <div class="menu-item" data-add-cat="styleRed" style="border-left:3px solid #e06a6a;">樣式紅</div>
+      <div class="menu-item" data-add-cat="styleYellow" style="border-left:3px solid #e0d06a;">樣式黃</div>
+      <div class="menu-item" data-add-cat="styleGreen" style="border-left:3px solid #6ae07a;">樣式綠</div>
+      <div class="menu-item" data-add-cat="styleBlue" style="border-left:3px solid #6aaee0;">樣式藍</div>
+      <div class="menu-item" data-add-cat="stylePurple" style="border-left:3px solid #b06ed4;">樣式紫</div>
+      <div class="menu-item" data-add-cat="styleGray" style="border-left:3px solid #888888;">樣式灰</div>
+    </div>
+  </div>
+</div>
+<div id="port-context-menu">
+  <div class="menu-item port-mode-item" data-mode="both">⬤ 兩邊都有圓點</div>
+  <div class="menu-item port-mode-item" data-mode="left">⬤ 只有左圓點</div>
+  <div class="menu-item port-mode-item" data-mode="right">⬤ 只有右圓點</div>
+  <div class="menu-item port-mode-item" data-mode="none">○ 沒有圓點</div>
+  <div class="menu-separator"></div>
+  <div class="menu-item" id="port-ctx-delete" style="color:#e06080;">刪除此行</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
