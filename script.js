@@ -48,7 +48,7 @@ function drawGrid() {
   if (step > 6) {
     const offX = panX % step;
     const offY = panY % step;
-    gridCtx.fillStyle = '#8488a0';
+    gridCtx.fillStyle = '#334155';
     for (let x = offX; x < w; x += step) {
       for (let y = offY; y < h; y += step) {
         gridCtx.fillRect(Math.round(x), Math.round(y), 1, 1);
@@ -60,7 +60,7 @@ function drawGrid() {
   const bigStep = bigGrid * scale;
   const bigOffX = panX % bigStep;
   const bigOffY = panY % bigStep;
-  gridCtx.strokeStyle = '#454562';
+  gridCtx.strokeStyle = '#1E293B';
   gridCtx.lineWidth = 1;
   gridCtx.beginPath();
   for (let x = bigOffX; x < w; x += bigStep) {
@@ -76,7 +76,7 @@ function drawGrid() {
   gridCtx.stroke();
 
   // axis lines (origin)
-  gridCtx.strokeStyle = '#65687e';
+  gridCtx.strokeStyle = '#475569';
   gridCtx.lineWidth = 1.5;
   gridCtx.beginPath();
   const originX = Math.round(panX) + 0.5;
@@ -92,8 +92,8 @@ function drawGrid() {
   gridCtx.stroke();
 
   // coordinate labels on big grid
-  gridCtx.fillStyle = '#65687e';
-  gridCtx.font = '10px sans-serif';
+  gridCtx.fillStyle = '#475569';
+  gridCtx.font = '10px "Fira Code", monospace';
   gridCtx.textBaseline = 'top';
   for (let x = bigOffX; x < w; x += bigStep) {
     const coord = Math.round((x - panX) / scale);
@@ -218,8 +218,8 @@ function makeEditable(el, defaultText) {
     input.type = 'text';
     input.value = old;
     input.style.cssText = `
-      width: ${Math.max(el.offsetWidth, 40)}px; font: inherit; color: #d4d8f0;
-      background: #3e3e55; border: 1px solid #89b4fa; border-radius: 3px;
+      width: ${Math.max(el.offsetWidth, 40)}px; font: inherit; color: #F8FAFC;
+      background: #0F172A; border: 1px solid #22C55E; border-radius: 4px;
       padding: 0 2px; outline: none; text-align: inherit;
     `;
     el.textContent = '';
@@ -233,7 +233,7 @@ function makeEditable(el, defaultText) {
       if (node && el.classList.contains('header-title')) {
         const nodeType = getNodeType(node);
         if (val !== old && isNodeNameTaken(val, nodeType, node.id)) {
-          input.style.borderColor = '#e06080';
+          input.style.borderColor = '#EF4444';
           input.title = '同類別已有相同名稱';
           input.focus();
           return;
@@ -258,8 +258,8 @@ function makeEditable_noCheck(el, defaultText) {
     input.type = 'text';
     input.value = old;
     input.style.cssText = `
-      width: ${Math.max(el.offsetWidth, 40)}px; font: inherit; color: #d4d8f0;
-      background: #3e3e55; border: 1px solid #89b4fa; border-radius: 3px;
+      width: ${Math.max(el.offsetWidth, 40)}px; font: inherit; color: #F8FAFC;
+      background: #0F172A; border: 1px solid #22C55E; border-radius: 4px;
       padding: 0 2px; outline: none; text-align: inherit;
     `;
     el.textContent = '';
@@ -308,7 +308,6 @@ function createNode(title, inputs, outputs, opts) {
 
   initPortButtons(node, id);
 
-  // Legacy support: merge old separate inputs/outputs into ports
   if (opts.ports) {
     opts.ports.forEach(p => addPort(node, id, p.label, p.mode));
   } else {
@@ -343,7 +342,6 @@ function addPort(node, nodeId, labelText, mode) {
   const count = body.querySelectorAll('.port-row').length + 1;
   const text = labelText || `Port ${count}`;
 
-  // Each row gets two port IDs (one for input dot, one for output dot)
   portIdCounter++;
   const inputPortId = 'port-' + portIdCounter;
   portIdCounter++;
@@ -353,7 +351,6 @@ function addPort(node, nodeId, labelText, mode) {
   row.className = 'port-row';
   row.dataset.mode = mode;
 
-  // Left (input) dot
   const leftDot = document.createElement('div');
   leftDot.className = 'port input';
   leftDot.dataset.node = nodeId;
@@ -361,13 +358,11 @@ function addPort(node, nodeId, labelText, mode) {
   leftDot.dataset.type = 'input';
   if (mode === 'right' || mode === 'none') leftDot.classList.add('hidden-port');
 
-  // Center label
   const label = document.createElement('span');
   label.className = 'port-label';
   label.textContent = text;
   makeEditable_noCheck(label, text);
 
-  // Right (output) dot
   const rightDot = document.createElement('div');
   rightDot.className = 'port output';
   rightDot.dataset.node = nodeId;
@@ -375,7 +370,6 @@ function addPort(node, nodeId, labelText, mode) {
   rightDot.dataset.type = 'output';
   if (mode === 'left' || mode === 'none') rightDot.classList.add('hidden-port');
 
-  // Delete button
   const delBtn = document.createElement('button');
   delBtn.className = 'port-delete';
   delBtn.textContent = '\u2715';
@@ -393,7 +387,6 @@ function addPort(node, nodeId, labelText, mode) {
   row.appendChild(rightDot);
   row.appendChild(delBtn);
 
-  // Right-click on row → port context menu
   row.addEventListener('contextmenu', e => {
     e.preventDefault();
     e.stopPropagation();
@@ -475,7 +468,6 @@ portContextMenu.querySelectorAll('.port-mode-item').forEach(item => {
     _portCtxRow.dataset.mode = newMode;
     const leftDot = _portCtxRow.querySelector('.port.input');
     const rightDot = _portCtxRow.querySelector('.port.output');
-    // Remove connections from dots that will be hidden
     if (newMode === 'right' || newMode === 'none') {
       removeConnectionsForPort(leftDot);
       leftDot.classList.add('hidden-port');
@@ -606,7 +598,6 @@ document.addEventListener('mousemove', e => {
 
 document.addEventListener('mouseup', e => {
   if (e.button !== 0) return;
-  // finish box select
   if (boxSelect) {
     const bx = parseInt(selectBox.style.left);
     const by = parseInt(selectBox.style.top);
@@ -704,7 +695,7 @@ function setupPortEvents(portEl, nodeId, portId) {
 
 function getNodeColor(nodeEl) {
   const cat = getNodeCategory(nodeEl);
-  return (nodeConfigs[cat] && nodeConfigs[cat].color) || '#a6e3a1';
+  return (nodeConfigs[cat] && nodeConfigs[cat].color) || '#22C55E';
 }
 
 function getNodeCategory(node) {
@@ -759,7 +750,6 @@ function setupNodeContextMenu(node) {
     e.preventDefault();
     e.stopPropagation();
     hideAllContextMenus();
-    /* 若此 node 尚未被選取，視為單選 */
     if (!selectedNodes.has(node)) {
       selectedNodes.forEach(n => n.classList.remove('selected'));
       selectedNodes.clear();
@@ -785,7 +775,6 @@ canvas.addEventListener('contextmenu', e => {
   if (e.target !== canvas && e.target !== canvasInner && e.target.id !== 'grid-canvas') return;
   e.preventDefault();
   hideAllContextMenus();
-  /* 右鍵畫布視為取消選擇 */
   selectedNodes.forEach(n => n.classList.remove('selected'));
   selectedNodes.clear();
 
@@ -800,10 +789,8 @@ canvas.addEventListener('contextmenu', e => {
   canvasContextMenu.style.top = e.clientY + 'px';
 });
 
-/* 畫布右鍵 → 新增節點父項不可點擊 */
 document.getElementById('ctx-add-node').addEventListener('click', e => e.stopPropagation());
 
-/* 畫布右鍵 → 新增節點子選單 */
 document.querySelectorAll('#canvas-context-menu [data-add-cat]').forEach(item => {
   item.addEventListener('click', () => {
     pushUndo();
@@ -817,7 +804,6 @@ document.querySelectorAll('#canvas-context-menu [data-add-cat]').forEach(item =>
   });
 });
 
-/* 左上按鈕下拉選單 */
 const addNodeDropdown = document.getElementById('add-node-dropdown');
 document.getElementById('add-node-btn').addEventListener('click', e => {
   e.stopPropagation();
@@ -948,7 +934,6 @@ function serializeNodeEl(node) {
 function buildPortMap(nodeEls) {
   const portToIndex = {};
   nodeEls.forEach((node, ni) => {
-    // Index by row position; input and output share the same row index
     const rows = node.querySelectorAll('.port-row');
     rows.forEach((row, ri) => {
       const inputDot = row.querySelector('.port.input');
@@ -981,7 +966,6 @@ function deserializeNode(n, x, y) {
     while (isNodeNameTaken(`${title}-${i}`, cat, '')) i++;
     title = `${title}-${i}`;
   }
-  // Support both new ports format and legacy inputs/outputs format
   let ports;
   if (Array.isArray(n.ports)) {
     ports = n.ports;
@@ -1013,7 +997,6 @@ function deserializeConns(conns, createdNodes) {
     const fromNode = createdNodes[c.fromNode];
     const toNode = createdNodes[c.toNode];
     if (!fromNode || !toNode) return;
-    // New format: fromType/toType specify which dot in the row
     const fromRows = fromNode.querySelectorAll('.port-row');
     const toRows = toNode.querySelectorAll('.port-row');
     const fromRow = fromRows[c.fromPort];
@@ -1146,7 +1129,6 @@ function loadBlueprint(blueprint) {
   deserializeConns(blueprint.connections, createdNodes);
   refreshConnections();
 
-  // center view on the imported blueprint
   if (createdNodes.length > 0) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     createdNodes.forEach(n => {
@@ -1232,10 +1214,10 @@ filterCbs.forEach(cb => {
 });
 
 /* ---- Node Template Registration ---- */
-nodeConfigs['styleBlue']   = { type: 'styleBlue',   title: '樣式藍', color: '#6aaee0' };
-nodeConfigs['stylePurple'] = { type: 'stylePurple', title: '樣式紫', color: '#b06ed4' };
-nodeConfigs['styleRed']    = { type: 'styleRed',    title: '樣式紅', color: '#e06a6a' };
-nodeConfigs['styleYellow'] = { type: 'styleYellow', title: '樣式黃', color: '#e0d06a' };
-nodeConfigs['styleGreen']  = { type: 'styleGreen',  title: '樣式綠', color: '#6ae07a' };
-nodeConfigs['styleWhite']  = { type: 'styleWhite',  title: '樣式白', color: '#e0e0e0' };
-nodeConfigs['styleGray']   = { type: 'styleGray',   title: '樣式灰', color: '#888888' };
+nodeConfigs['styleBlue']   = { type: 'styleBlue',   title: '樣式藍', color: '#5b9bf0' };
+nodeConfigs['stylePurple'] = { type: 'stylePurple', title: '樣式紫', color: '#9d6ee8' };
+nodeConfigs['styleRed']    = { type: 'styleRed',    title: '樣式紅', color: '#ef6b6b' };
+nodeConfigs['styleYellow'] = { type: 'styleYellow', title: '樣式黃', color: '#ebc44e' };
+nodeConfigs['styleGreen']  = { type: 'styleGreen',  title: '樣式綠', color: '#58d468' };
+nodeConfigs['styleWhite']  = { type: 'styleWhite',  title: '樣式白', color: '#d0d4e0' };
+nodeConfigs['styleGray']   = { type: 'styleGray',   title: '樣式灰', color: '#8a8e9e' };

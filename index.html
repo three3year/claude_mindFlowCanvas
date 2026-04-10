@@ -3,37 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Node Editor</title>
+<title>Node Blueprint Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="toolbar">
   <div id="add-node-dropdown" style="position:relative;">
-    <button id="add-node-btn" style="background:#6aaee0;color:#f0f4fa;">+ 新增節點</button>
+    <button id="add-node-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>新增節點</span>
+    </button>
     <div id="add-node-menu">
-      <div class="menu-item" data-cat="styleWhite" style="border-left:3px solid #e0e0e0;">樣式白</div>
-      <div class="menu-item" data-cat="styleRed" style="border-left:3px solid #e06a6a;">樣式紅</div>
-      <div class="menu-item" data-cat="styleYellow" style="border-left:3px solid #e0d06a;">樣式黃</div>
-      <div class="menu-item" data-cat="styleGreen" style="border-left:3px solid #6ae07a;">樣式綠</div>
-      <div class="menu-item" data-cat="styleBlue" style="border-left:3px solid #6aaee0;">樣式藍</div>
-      <div class="menu-item" data-cat="stylePurple" style="border-left:3px solid #b06ed4;">樣式紫</div>
-      <div class="menu-item" data-cat="styleGray" style="border-left:3px solid #888888;">樣式灰</div>
+      <div class="menu-item" data-cat="styleWhite"><span class="cat-dot" style="background:#cbd5e1;"></span>樣式白</div>
+      <div class="menu-item" data-cat="styleRed"><span class="cat-dot" style="background:#f87171;"></span>樣式紅</div>
+      <div class="menu-item" data-cat="styleYellow"><span class="cat-dot" style="background:#fbbf24;"></span>樣式黃</div>
+      <div class="menu-item" data-cat="styleGreen"><span class="cat-dot" style="background:#4ade80;"></span>樣式綠</div>
+      <div class="menu-item" data-cat="styleBlue"><span class="cat-dot" style="background:#60a5fa;"></span>樣式藍</div>
+      <div class="menu-item" data-cat="stylePurple"><span class="cat-dot" style="background:#a78bfa;"></span>樣式紫</div>
+      <div class="menu-item" data-cat="styleGray"><span class="cat-dot" style="background:#94a3b8;"></span>樣式灰</div>
     </div>
   </div>
   <div class="separator"></div>
-  <button onclick="exportBlueprint()">匯出 Blueprint</button>
-  <button onclick="importBlueprint()">匯入 Blueprint</button>
+  <button onclick="exportBlueprint()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span>匯出</span>
+  </button>
+  <button onclick="importBlueprint()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span>匯入</span>
+  </button>
 </div>
 <div id="filter-panel">
   <label><input type="checkbox" checked id="filter-select-all">全選</label>
-  <hr style="border:none;border-top:1px solid #555;margin:2px 0;">
-  <label><input type="checkbox" checked data-filter="styleWhite"><span class="filter-dot" style="background:#e0e0e0;"></span>樣式白</label>
-  <label><input type="checkbox" checked data-filter="styleRed"><span class="filter-dot" style="background:#e06a6a;"></span>樣式紅</label>
-  <label><input type="checkbox" checked data-filter="styleYellow"><span class="filter-dot" style="background:#e0d06a;"></span>樣式黃</label>
-  <label><input type="checkbox" checked data-filter="styleGreen"><span class="filter-dot" style="background:#6ae07a;"></span>樣式綠</label>
-  <label><input type="checkbox" checked data-filter="styleBlue"><span class="filter-dot" style="background:#6aaee0;"></span>樣式藍</label>
-  <label><input type="checkbox" checked data-filter="stylePurple"><span class="filter-dot" style="background:#b06ed4;"></span>樣式紫</label>
-  <label><input type="checkbox" checked data-filter="styleGray"><span class="filter-dot" style="background:#888888;"></span>樣式灰</label>
+  <hr>
+  <label><input type="checkbox" checked data-filter="styleWhite"><span class="filter-dot" style="background:#cbd5e1;"></span>樣式白</label>
+  <label><input type="checkbox" checked data-filter="styleRed"><span class="filter-dot" style="background:#f87171;"></span>樣式紅</label>
+  <label><input type="checkbox" checked data-filter="styleYellow"><span class="filter-dot" style="background:#fbbf24;"></span>樣式黃</label>
+  <label><input type="checkbox" checked data-filter="styleGreen"><span class="filter-dot" style="background:#4ade80;"></span>樣式綠</label>
+  <label><input type="checkbox" checked data-filter="styleBlue"><span class="filter-dot" style="background:#60a5fa;"></span>樣式藍</label>
+  <label><input type="checkbox" checked data-filter="stylePurple"><span class="filter-dot" style="background:#a78bfa;"></span>樣式紫</label>
+  <label><input type="checkbox" checked data-filter="styleGray"><span class="filter-dot" style="background:#94a3b8;"></span>樣式灰</label>
 </div>
 <div id="canvas">
   <canvas id="grid-canvas"></canvas>
@@ -44,36 +56,54 @@
 </div>
 <div id="context-menu">
   <div class="menu-label">屬性</div>
-  <div class="menu-item ctx-category" data-cat="styleWhite" style="border-left:3px solid #e0e0e0;">樣式白</div>
-  <div class="menu-item ctx-category" data-cat="styleRed" style="border-left:3px solid #e06a6a;">樣式紅</div>
-  <div class="menu-item ctx-category" data-cat="styleYellow" style="border-left:3px solid #e0d06a;">樣式黃</div>
-  <div class="menu-item ctx-category" data-cat="styleGreen" style="border-left:3px solid #6ae07a;">樣式綠</div>
-  <div class="menu-item ctx-category" data-cat="styleBlue" style="border-left:3px solid #6aaee0;">樣式藍</div>
-  <div class="menu-item ctx-category" data-cat="stylePurple" style="border-left:3px solid #b06ed4;">樣式紫</div>
-  <div class="menu-item ctx-category" data-cat="styleGray" style="border-left:3px solid #888888;">樣式灰</div>
+  <div class="menu-item ctx-category" data-cat="styleWhite"><span class="cat-dot" style="background:#cbd5e1;"></span>樣式白</div>
+  <div class="menu-item ctx-category" data-cat="styleRed"><span class="cat-dot" style="background:#f87171;"></span>樣式紅</div>
+  <div class="menu-item ctx-category" data-cat="styleYellow"><span class="cat-dot" style="background:#fbbf24;"></span>樣式黃</div>
+  <div class="menu-item ctx-category" data-cat="styleGreen"><span class="cat-dot" style="background:#4ade80;"></span>樣式綠</div>
+  <div class="menu-item ctx-category" data-cat="styleBlue"><span class="cat-dot" style="background:#60a5fa;"></span>樣式藍</div>
+  <div class="menu-item ctx-category" data-cat="stylePurple"><span class="cat-dot" style="background:#a78bfa;"></span>樣式紫</div>
+  <div class="menu-item ctx-category" data-cat="styleGray"><span class="cat-dot" style="background:#94a3b8;"></span>樣式灰</div>
   <div class="menu-separator"></div>
-  <div class="menu-item" id="ctx-delete-node" style="color:#e06080;">刪除 Node</div>
+  <div class="menu-item menu-item-danger" id="ctx-delete-node">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    刪除 Node
+  </div>
 </div>
 <div id="canvas-context-menu">
   <div class="menu-item submenu-parent" id="ctx-add-node">新增節點 ▸
     <div class="submenu">
-      <div class="menu-item" data-add-cat="styleWhite" style="border-left:3px solid #e0e0e0;">樣式白</div>
-      <div class="menu-item" data-add-cat="styleRed" style="border-left:3px solid #e06a6a;">樣式紅</div>
-      <div class="menu-item" data-add-cat="styleYellow" style="border-left:3px solid #e0d06a;">樣式黃</div>
-      <div class="menu-item" data-add-cat="styleGreen" style="border-left:3px solid #6ae07a;">樣式綠</div>
-      <div class="menu-item" data-add-cat="styleBlue" style="border-left:3px solid #6aaee0;">樣式藍</div>
-      <div class="menu-item" data-add-cat="stylePurple" style="border-left:3px solid #b06ed4;">樣式紫</div>
-      <div class="menu-item" data-add-cat="styleGray" style="border-left:3px solid #888888;">樣式灰</div>
+      <div class="menu-item" data-add-cat="styleWhite"><span class="cat-dot" style="background:#cbd5e1;"></span>樣式白</div>
+      <div class="menu-item" data-add-cat="styleRed"><span class="cat-dot" style="background:#f87171;"></span>樣式紅</div>
+      <div class="menu-item" data-add-cat="styleYellow"><span class="cat-dot" style="background:#fbbf24;"></span>樣式黃</div>
+      <div class="menu-item" data-add-cat="styleGreen"><span class="cat-dot" style="background:#4ade80;"></span>樣式綠</div>
+      <div class="menu-item" data-add-cat="styleBlue"><span class="cat-dot" style="background:#60a5fa;"></span>樣式藍</div>
+      <div class="menu-item" data-add-cat="stylePurple"><span class="cat-dot" style="background:#a78bfa;"></span>樣式紫</div>
+      <div class="menu-item" data-add-cat="styleGray"><span class="cat-dot" style="background:#94a3b8;"></span>樣式灰</div>
     </div>
   </div>
 </div>
 <div id="port-context-menu">
-  <div class="menu-item port-mode-item" data-mode="both">⬤ 兩邊都有圓點</div>
-  <div class="menu-item port-mode-item" data-mode="left">⬤ 只有左圓點</div>
-  <div class="menu-item port-mode-item" data-mode="right">⬤ 只有右圓點</div>
-  <div class="menu-item port-mode-item" data-mode="none">○ 沒有圓點</div>
+  <div class="menu-item port-mode-item" data-mode="both">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+    兩邊都有圓點
+  </div>
+  <div class="menu-item port-mode-item" data-mode="left">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+    只有左圓點
+  </div>
+  <div class="menu-item port-mode-item" data-mode="right">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+    只有右圓點
+  </div>
+  <div class="menu-item port-mode-item" data-mode="none">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>
+    沒有圓點
+  </div>
   <div class="menu-separator"></div>
-  <div class="menu-item" id="port-ctx-delete" style="color:#e06080;">刪除此行</div>
+  <div class="menu-item menu-item-danger" id="port-ctx-delete">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    刪除此行
+  </div>
 </div>
 
 <script src="script.js"></script>
