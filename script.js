@@ -180,6 +180,14 @@ function getViewCenter() {
   };
 }
 
+document.addEventListener('mousedown', e => {
+  const active = document.activeElement;
+  if (!active) return;
+  if (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA') return;
+  if (active.contains(e.target)) return;
+  active.blur();
+}, true);
+
 let nodeCount = 0;
 let portIdCounter = 0;
 let connections = [];
@@ -393,6 +401,9 @@ function addPort(node, nodeId, labelText, mode) {
     showPortContextMenu(e, row);
   });
 
+  row.addEventListener('mouseenter', () => { _hoveredPortRow = row; });
+  row.addEventListener('mouseleave', () => { if (_hoveredPortRow === row) _hoveredPortRow = null; });
+
   const btns = body.querySelector('.port-btns');
   body.insertBefore(row, btns);
   setupPortEvents(leftDot, nodeId, inputPortId);
@@ -448,6 +459,7 @@ function hideAllContextMenus() {
 /* ---- Port Context Menu ---- */
 const portContextMenu = document.getElementById('port-context-menu');
 let _portCtxRow = null;
+let _hoveredPortRow = null;
 
 function showPortContextMenu(e, row) {
   hideAllContextMenus();
@@ -461,26 +473,31 @@ function showPortContextMenu(e, row) {
   portContextMenu.style.display = 'block';
 }
 
+function setPortRowMode(row, newMode) {
+  if (!row || row.dataset.mode === newMode) return;
+  row.dataset.mode = newMode;
+  const leftDot = row.querySelector('.port.input');
+  const rightDot = row.querySelector('.port.output');
+  if (newMode === 'right' || newMode === 'none') {
+    removeConnectionsForPort(leftDot);
+    leftDot.classList.add('hidden-port');
+  } else {
+    leftDot.classList.remove('hidden-port');
+  }
+  if (newMode === 'left' || newMode === 'none') {
+    removeConnectionsForPort(rightDot);
+    rightDot.classList.add('hidden-port');
+  } else {
+    rightDot.classList.remove('hidden-port');
+  }
+  refreshConnections();
+}
+
 portContextMenu.querySelectorAll('.port-mode-item').forEach(item => {
   item.addEventListener('click', () => {
     if (!_portCtxRow) return;
-    const newMode = item.dataset.mode;
-    _portCtxRow.dataset.mode = newMode;
-    const leftDot = _portCtxRow.querySelector('.port.input');
-    const rightDot = _portCtxRow.querySelector('.port.output');
-    if (newMode === 'right' || newMode === 'none') {
-      removeConnectionsForPort(leftDot);
-      leftDot.classList.add('hidden-port');
-    } else {
-      leftDot.classList.remove('hidden-port');
-    }
-    if (newMode === 'left' || newMode === 'none') {
-      removeConnectionsForPort(rightDot);
-      rightDot.classList.add('hidden-port');
-    } else {
-      rightDot.classList.remove('hidden-port');
-    }
-    refreshConnections();
+    pushUndo();
+    setPortRowMode(_portCtxRow, item.dataset.mode);
     portContextMenu.style.display = 'none';
     _portCtxRow = null;
   });
@@ -592,9 +609,45 @@ document.addEventListener('mousemove', e => {
     });
   }
   if (wireDrag) {
+    _wirePanMouse = { clientX: e.clientX, clientY: e.clientY };
     updateTempLine(e);
+    startWireAutoPan();
   }
 });
+
+let _wirePanRaf = null;
+let _wirePanMouse = null;
+const WIRE_PAN_EDGE = 50;
+const WIRE_PAN_MAX_SPEED = 14;
+
+function startWireAutoPan() {
+  if (_wirePanRaf != null) return;
+  const tick = () => {
+    if (!wireDrag || !_wirePanMouse) { _wirePanRaf = null; return; }
+    const rect = canvas.getBoundingClientRect();
+    const mx = _wirePanMouse.clientX - rect.left;
+    const my = _wirePanMouse.clientY - rect.top;
+    let dx = 0, dy = 0;
+    if (mx < WIRE_PAN_EDGE) dx = (WIRE_PAN_EDGE - Math.max(mx, 0)) / WIRE_PAN_EDGE * WIRE_PAN_MAX_SPEED;
+    else if (mx > rect.width - WIRE_PAN_EDGE) dx = -(WIRE_PAN_EDGE - Math.max(rect.width - mx, 0)) / WIRE_PAN_EDGE * WIRE_PAN_MAX_SPEED;
+    if (my < WIRE_PAN_EDGE) dy = (WIRE_PAN_EDGE - Math.max(my, 0)) / WIRE_PAN_EDGE * WIRE_PAN_MAX_SPEED;
+    else if (my > rect.height - WIRE_PAN_EDGE) dy = -(WIRE_PAN_EDGE - Math.max(rect.height - my, 0)) / WIRE_PAN_EDGE * WIRE_PAN_MAX_SPEED;
+    if (dx !== 0 || dy !== 0) {
+      panX += dx;
+      panY += dy;
+      applyTransform();
+      refreshConnections();
+      updateTempLine(_wirePanMouse);
+    }
+    _wirePanRaf = requestAnimationFrame(tick);
+  };
+  _wirePanRaf = requestAnimationFrame(tick);
+}
+
+function stopWireAutoPan() {
+  if (_wirePanRaf != null) { cancelAnimationFrame(_wirePanRaf); _wirePanRaf = null; }
+  _wirePanMouse = null;
+}
 
 document.addEventListener('mouseup', e => {
   if (e.button !== 0) return;
@@ -626,6 +679,7 @@ document.addEventListener('mouseup', e => {
     if (wireDrag.tempLine) wireDrag.tempLine.remove();
     wireDrag = null;
     document.body.classList.remove('wiring');
+    stopWireAutoPan();
   }
 });
 
@@ -804,19 +858,27 @@ document.querySelectorAll('#canvas-context-menu [data-add-cat]').forEach(item =>
   });
 });
 
-const addNodeDropdown = document.getElementById('add-node-dropdown');
-document.getElementById('add-node-btn').addEventListener('click', e => {
-  e.stopPropagation();
-  addNodeDropdown.classList.toggle('open');
-});
-document.querySelectorAll('#add-node-menu .menu-item').forEach(item => {
-  item.addEventListener('click', () => {
+document.querySelectorAll('.add-cat-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
     pushUndo();
-    addBlankNode(item.dataset.cat);
-    addNodeDropdown.classList.remove('open');
+    addBlankNode(btn.dataset.cat);
   });
 });
-document.addEventListener('click', () => addNodeDropdown.classList.remove('open'));
+
+const helpModal = document.getElementById('help-modal');
+const helpBtn = document.getElementById('help-btn');
+const helpClose = document.getElementById('help-close');
+helpBtn.addEventListener('click', e => { e.stopPropagation(); helpModal.classList.add('open'); });
+helpClose.addEventListener('click', () => helpModal.classList.remove('open'));
+helpModal.addEventListener('click', e => {
+  if (e.target === helpModal) helpModal.classList.remove('open');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && helpModal.classList.contains('open')) {
+    helpModal.classList.remove('open');
+  }
+});
 
 function changeNodeCategory(node, newCat) {
   if (node.dataset.category === newCat) return;
@@ -1063,11 +1125,19 @@ document.addEventListener('keydown', e => {
   const inText = tag === 'INPUT' || tag === 'TEXTAREA';
   if (inText) return;
 
-  if (e.key === 'Delete' && selectedNodes.size > 0) { pushUndo(); deleteSelectedNodes(); return; }
-  if (e.ctrlKey && e.key === 'c' && selectedNodes.size > 0) { copySelectedNodes(); return; }
-  if (e.ctrlKey && e.key === 'v') { e.preventDefault(); pushUndo(); pasteNodes(); return; }
-  if (e.ctrlKey && e.shiftKey && e.key === 'Z') { e.preventDefault(); redo(); return; }
-  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); return; }
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && _hoveredPortRow && ['1','2','3','4'].includes(k)) {
+    const modes = { '1': 'both', '2': 'left', '3': 'right', '4': 'none' };
+    pushUndo();
+    setPortRowMode(_hoveredPortRow, modes[k]);
+    return;
+  }
+  if (k === 'Delete' && selectedNodes.size > 0) { pushUndo(); deleteSelectedNodes(); return; }
+  if (e.ctrlKey && k === 'c' && selectedNodes.size > 0) { copySelectedNodes(); return; }
+  if (e.ctrlKey && k === 'v') { e.preventDefault(); pushUndo(); pasteNodes(); return; }
+  if (e.ctrlKey && e.shiftKey && k === 'z') { e.preventDefault(); redo(); return; }
+  if (e.ctrlKey && k === 'z') { e.preventDefault(); undo(); return; }
 });
 
 /* ---- Export / Import Blueprint ---- */

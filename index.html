@@ -11,22 +11,22 @@
 </head>
 <body>
 <div id="toolbar">
-  <div id="add-node-dropdown" style="position:relative;">
-    <button id="add-node-btn">
+  <div id="add-node-section">
+    <span class="section-label">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <span>新增節點</span>
-    </button>
-    <div id="add-node-menu">
-      <div class="menu-item" data-cat="styleWhite"><span class="cat-dot" style="background:#cbd5e1;"></span>樣式白</div>
-      <div class="menu-item" data-cat="styleRed"><span class="cat-dot" style="background:#f87171;"></span>樣式紅</div>
-      <div class="menu-item" data-cat="styleYellow"><span class="cat-dot" style="background:#fbbf24;"></span>樣式黃</div>
-      <div class="menu-item" data-cat="styleGreen"><span class="cat-dot" style="background:#4ade80;"></span>樣式綠</div>
-      <div class="menu-item" data-cat="styleBlue"><span class="cat-dot" style="background:#60a5fa;"></span>樣式藍</div>
-      <div class="menu-item" data-cat="stylePurple"><span class="cat-dot" style="background:#a78bfa;"></span>樣式紫</div>
-      <div class="menu-item" data-cat="styleGray"><span class="cat-dot" style="background:#94a3b8;"></span>樣式灰</div>
+    </span>
+    <div class="add-cat-buttons">
+      <button class="add-cat-btn" data-cat="styleWhite" title="樣式白"><span class="cat-dot" style="background:#cbd5e1;"></span></button>
+      <button class="add-cat-btn" data-cat="styleRed" title="樣式紅"><span class="cat-dot" style="background:#f87171;"></span></button>
+      <button class="add-cat-btn" data-cat="styleYellow" title="樣式黃"><span class="cat-dot" style="background:#fbbf24;"></span></button>
+      <button class="add-cat-btn" data-cat="styleGreen" title="樣式綠"><span class="cat-dot" style="background:#4ade80;"></span></button>
+      <button class="add-cat-btn" data-cat="styleBlue" title="樣式藍"><span class="cat-dot" style="background:#60a5fa;"></span></button>
+      <button class="add-cat-btn" data-cat="stylePurple" title="樣式紫"><span class="cat-dot" style="background:#a78bfa;"></span></button>
+      <button class="add-cat-btn" data-cat="styleGray" title="樣式灰"><span class="cat-dot" style="background:#94a3b8;"></span></button>
     </div>
   </div>
-  <div class="separator"></div>
+  <div class="toolbar-spacer"></div>
   <button onclick="exportBlueprint()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <span>匯出</span>
@@ -35,6 +35,7 @@
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     <span>匯入</span>
   </button>
+  <button id="help-btn" title="操作規則說明">?</button>
 </div>
 <div id="filter-panel">
   <label><input type="checkbox" checked id="filter-select-all">全選</label>
@@ -103,6 +104,61 @@
   <div class="menu-item menu-item-danger" id="port-ctx-delete">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
     刪除此行
+  </div>
+</div>
+
+<div id="help-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>操作規則說明</h3>
+      <button class="modal-close" id="help-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-section">
+        <h4>節點 Node</h4>
+        <dl>
+          <dt>左鍵拖曳 Header</dt><dd>移動節點</dd>
+          <dt>Shift + 拖曳</dt><dd>對齊 20px 網格</dd>
+          <dt>Ctrl + 左鍵</dt><dd>加入 / 移除多選</dd>
+          <dt>空白畫布拖曳</dt><dd>框選節點</dd>
+          <dt>雙擊標題 / Port 標籤</dt><dd>重新命名</dd>
+          <dt>右鍵節點</dt><dd>變更分類顏色 / 刪除</dd>
+          <dt>右鍵空白畫布</dt><dd>在該處新增節點</dd>
+          <dt>Delete</dt><dd>刪除已選節點</dd>
+        </dl>
+      </div>
+      <div class="help-section">
+        <h4>屬性 Port（游標懸停該行時生效）</h4>
+        <dl>
+          <dt>1</dt><dd>兩邊都有圓點</dd>
+          <dt>2</dt><dd>只有左圓點</dd>
+          <dt>3</dt><dd>只有右圓點</dd>
+          <dt>4</dt><dd>沒有圓點</dd>
+          <dt>右鍵 Port 行</dt><dd>開啟模式選單 / 刪除此行</dd>
+          <dt>拖曳右圓點 → 左圓點</dt><dd>建立連線</dd>
+          <dt>雙擊圓點</dt><dd>刪除該圓點的所有連線</dd>
+          <dt>「+」按鈕</dt><dd>新增一行 Port</dd>
+        </dl>
+      </div>
+      <div class="help-section">
+        <h4>複製 / 復原</h4>
+        <dl>
+          <dt>Ctrl + C</dt><dd>複製已選節點</dd>
+          <dt>Ctrl + V</dt><dd>貼上到最後點擊的位置</dd>
+          <dt>Ctrl + Z</dt><dd>復原</dd>
+          <dt>Ctrl + Shift + Z</dt><dd>重做</dd>
+        </dl>
+      </div>
+      <div class="help-section">
+        <h4>畫面</h4>
+        <dl>
+          <dt>滾輪</dt><dd>以游標為中心縮放</dd>
+          <dt>中鍵拖曳</dt><dd>平移畫面</dd>
+          <dt>Space + 左鍵拖曳</dt><dd>平移畫面</dd>
+          <dt>右側過濾面板</dt><dd>依分類顯示 / 淡化節點</dd>
+        </dl>
+      </div>
+    </div>
   </div>
 </div>
 
