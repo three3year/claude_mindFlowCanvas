@@ -456,6 +456,23 @@ function hideAllContextMenus() {
   _portCtxRow = null;
 }
 
+function positionContextMenu(menuEl, clientX, clientY) {
+  menuEl.style.left = '0px';
+  menuEl.style.top = '0px';
+  menuEl.style.display = 'block';
+  const w = menuEl.offsetWidth;
+  const h = menuEl.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const margin = 8;
+  let left = clientX;
+  let top = clientY;
+  if (left + w + margin > vw) left = Math.max(margin, vw - w - margin);
+  if (top + h + margin > vh) top = Math.max(margin, vh - h - margin);
+  menuEl.style.left = left + 'px';
+  menuEl.style.top = top + 'px';
+}
+
 /* ---- Port Context Menu ---- */
 const portContextMenu = document.getElementById('port-context-menu');
 let _portCtxRow = null;
@@ -468,9 +485,7 @@ function showPortContextMenu(e, row) {
   portContextMenu.querySelectorAll('.port-mode-item').forEach(item => {
     item.classList.toggle('active', item.dataset.mode === mode);
   });
-  portContextMenu.style.left = e.clientX + 'px';
-  portContextMenu.style.top = e.clientY + 'px';
-  portContextMenu.style.display = 'block';
+  positionContextMenu(portContextMenu, e.clientX, e.clientY);
 }
 
 function setPortRowMode(row, newMode) {
@@ -811,9 +826,7 @@ function setupNodeContextMenu(node) {
       node.classList.add('selected');
     }
     contextTarget = node;
-    contextMenu.style.display = 'block';
-    contextMenu.style.left = e.clientX + 'px';
-    contextMenu.style.top = e.clientY + 'px';
+    positionContextMenu(contextMenu, e.clientX, e.clientY);
   });
 }
 
@@ -838,9 +851,7 @@ canvas.addEventListener('contextmenu', e => {
     y: (e.clientY - canvasRect.top - panY) / scale
   };
 
-  canvasContextMenu.style.display = 'block';
-  canvasContextMenu.style.left = e.clientX + 'px';
-  canvasContextMenu.style.top = e.clientY + 'px';
+  positionContextMenu(canvasContextMenu, e.clientX, e.clientY);
 });
 
 document.getElementById('ctx-add-node').addEventListener('click', e => e.stopPropagation());
@@ -909,6 +920,120 @@ document.querySelectorAll('.ctx-category').forEach(item => {
     contextMenu.style.display = 'none';
     contextTarget = null;
   });
+});
+
+/* ---- Layer / Z-Order ---- */
+function getNodeListInOrder() {
+  return Array.from(canvasInner.querySelectorAll(':scope > .node'));
+}
+
+function getLayerTargets() {
+  const targets = new Set(selectedNodes);
+  if (contextTarget) targets.add(contextTarget);
+  return getNodeListInOrder().filter(n => targets.has(n));
+}
+
+function moveSelectionToTop() {
+  const sel = getLayerTargets();
+  if (sel.length === 0) return;
+  const all = getNodeListInOrder();
+  const tail = all.slice(-sel.length);
+  if (tail.every((n, i) => n === sel[i])) return;
+  pushUndo();
+  sel.forEach(node => canvasInner.appendChild(node));
+  refreshConnections();
+}
+
+function moveSelectionToBottom() {
+  const sel = getLayerTargets();
+  if (sel.length === 0) return;
+  const all = getNodeListInOrder();
+  const head = all.slice(0, sel.length);
+  if (head.every((n, i) => n === sel[i])) return;
+  pushUndo();
+  const selSet = new Set(sel);
+  const firstUnselected = all.find(n => !selSet.has(n));
+  if (firstUnselected) {
+    sel.forEach(node => canvasInner.insertBefore(node, firstUnselected));
+  }
+  refreshConnections();
+}
+
+function _buildSelectionRuns(all, selSet) {
+  const runs = [];
+  let cur = null;
+  all.forEach((n, i) => {
+    if (selSet.has(n)) {
+      if (!cur) cur = { start: i, end: i };
+      else cur.end = i;
+    } else if (cur) { runs.push(cur); cur = null; }
+  });
+  if (cur) runs.push(cur);
+  return runs;
+}
+
+function moveSelectionUp() {
+  const all = getNodeListInOrder();
+  const selSet = new Set(getLayerTargets());
+  if (selSet.size === 0) return;
+  const runs = _buildSelectionRuns(all, selSet);
+  const moves = [];
+  for (let r = runs.length - 1; r >= 0; r--) {
+    const run = runs[r];
+    if (run.end + 1 >= all.length) continue;
+    moves.push({ pivot: all[run.end + 1], before: all[run.start] });
+  }
+  if (moves.length === 0) return;
+  pushUndo();
+  moves.forEach(m => canvasInner.insertBefore(m.pivot, m.before));
+  refreshConnections();
+}
+
+function moveSelectionDown() {
+  const all = getNodeListInOrder();
+  const selSet = new Set(getLayerTargets());
+  if (selSet.size === 0) return;
+  const runs = _buildSelectionRuns(all, selSet);
+  const moves = [];
+  for (let r = 0; r < runs.length; r++) {
+    const run = runs[r];
+    if (run.start - 1 < 0) continue;
+    const pivot = all[run.start - 1];
+    const topOfRun = all[run.end];
+    moves.push({ pivot, anchor: topOfRun.nextSibling });
+  }
+  if (moves.length === 0) return;
+  pushUndo();
+  moves.forEach(m => {
+    if (m.anchor) canvasInner.insertBefore(m.pivot, m.anchor);
+    else canvasInner.appendChild(m.pivot);
+  });
+  refreshConnections();
+}
+
+document.getElementById('ctx-layer-top').addEventListener('click', () => {
+  if (!contextTarget) return;
+  moveSelectionToTop();
+  contextMenu.style.display = 'none';
+  contextTarget = null;
+});
+document.getElementById('ctx-layer-up').addEventListener('click', () => {
+  if (!contextTarget) return;
+  moveSelectionUp();
+  contextMenu.style.display = 'none';
+  contextTarget = null;
+});
+document.getElementById('ctx-layer-down').addEventListener('click', () => {
+  if (!contextTarget) return;
+  moveSelectionDown();
+  contextMenu.style.display = 'none';
+  contextTarget = null;
+});
+document.getElementById('ctx-layer-bottom').addEventListener('click', () => {
+  if (!contextTarget) return;
+  moveSelectionToBottom();
+  contextMenu.style.display = 'none';
+  contextTarget = null;
 });
 
 document.getElementById('ctx-delete-node').addEventListener('click', () => {
