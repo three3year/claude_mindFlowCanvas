@@ -301,8 +301,9 @@ function createNode(title, inputs, outputs, opts) {
   node.style.top = (opts.y != null ? opts.y : vc.y - 50 + (nodeCount % 5) * 30) + 'px';
 
   node.innerHTML = `
+    <div class="node-badge" hidden></div>
     <div class="node-header"><span class="header-title">${title}</span></div>
-    <div class="node-desc"><textarea placeholder="主要功能描述..."></textarea></div>
+    <div class="node-desc"><textarea cols="1" placeholder="主要功能描述..."></textarea></div>
     <div class="node-body"></div>`;
 
   canvasInner.appendChild(node);
@@ -310,6 +311,10 @@ function createNode(title, inputs, outputs, opts) {
   setupNodeContextMenu(node);
 
   makeEditable(node.querySelector('.header-title'), title);
+
+  const nodeHeader = node.querySelector('.node-header');
+  nodeHeader.addEventListener('mouseenter', () => { _hoveredHeaderTitle = nodeHeader; });
+  nodeHeader.addEventListener('mouseleave', () => { if (_hoveredHeaderTitle === nodeHeader) _hoveredHeaderTitle = null; });
 
   const textarea = node.querySelector('.node-desc textarea');
   new ResizeObserver(() => refreshConnections()).observe(textarea);
@@ -331,6 +336,10 @@ function createNode(title, inputs, outputs, opts) {
 
   if (opts.desc) {
     node.querySelector('.node-desc textarea').value = opts.desc;
+  }
+
+  if (opts.badge) {
+    setNodeBadge(node, opts.badge);
   }
 
   return node;
@@ -477,6 +486,28 @@ function positionContextMenu(menuEl, clientX, clientY) {
 const portContextMenu = document.getElementById('port-context-menu');
 let _portCtxRow = null;
 let _hoveredPortRow = null;
+let _hoveredHeaderTitle = null;
+
+const BADGE_COLORS = ['styleBlue','stylePurple','styleRed','styleYellow','styleGreen','styleWhite','styleGray'];
+
+function setNodeBadge(node, value) {
+  const badge = node.querySelector('.node-badge');
+  if (!badge) return;
+  if (!value || value === '0') {
+    delete node.dataset.badge;
+    badge.hidden = true;
+    badge.removeAttribute('data-num');
+    badge.removeAttribute('data-color');
+    return;
+  }
+  const num = String(value);
+  const idx = parseInt(num) - 1;
+  if (idx < 0 || idx > 6) return;
+  node.dataset.badge = num;
+  badge.hidden = false;
+  badge.setAttribute('data-num', num);
+  badge.setAttribute('data-color', BADGE_COLORS[idx]);
+}
 
 function showPortContextMenu(e, row) {
   hideAllContextMenus();
@@ -1115,7 +1146,8 @@ function serializeNodeEl(node) {
     label: row.querySelector('.port-label').textContent,
     mode: row.dataset.mode || 'both'
   }));
-  return { title, desc, descW, descH, category: cat, x: parseInt(node.style.left), y: parseInt(node.style.top), ports };
+  const badge = node.dataset.badge || null;
+  return { title, desc, descW, descH, category: cat, badge, x: parseInt(node.style.left), y: parseInt(node.style.top), ports };
 }
 
 function buildPortMap(nodeEls) {
@@ -1168,7 +1200,7 @@ function deserializeNode(n, x, y) {
       ports.push({ label, mode: hasLeft && hasRight ? 'both' : hasLeft ? 'left' : 'right' });
     }
   }
-  const node = createNode(title, [], [], { category: cat, x, y, desc: n.desc || '', ports });
+  const node = createNode(title, [], [], { category: cat, x, y, desc: n.desc || '', ports, badge: n.badge || null });
   if (n.descW || n.descH) {
     const ta = node.querySelector('.node-desc textarea');
     if (ta) {
@@ -1251,6 +1283,16 @@ document.addEventListener('keydown', e => {
   if (inText) return;
 
   const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && _hoveredHeaderTitle && ['0','1','2','3','4','5','6','7'].includes(k)) {
+    const node = _hoveredHeaderTitle.closest('.node');
+    if (node) {
+      pushUndo();
+      setNodeBadge(node, k);
+      e.preventDefault();
+      return;
+    }
+  }
 
   if (!e.ctrlKey && !e.metaKey && !e.altKey && _hoveredPortRow && ['1','2','3','4'].includes(k)) {
     const modes = { '1': 'both', '2': 'left', '3': 'right', '4': 'none' };

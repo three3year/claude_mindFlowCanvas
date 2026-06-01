@@ -154,7 +154,7 @@ svg#connections path.temp {
 
 /* ---- Nodes ---- */
 .node {
-  position: absolute; min-width: 210px;
+  position: absolute; min-width: 142px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
@@ -162,6 +162,36 @@ svg#connections path.temp {
   z-index: 10; user-select: none;
   overflow: hidden;
   transition: background var(--transition);
+}
+
+/* ---- Node Corner Badge ---- */
+.node-badge {
+  position: absolute; top: 0; right: 0;
+  width: 28px; height: 28px;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  background: var(--cat-blue);
+  pointer-events: none;
+  z-index: 2;
+}
+.node-badge::after {
+  content: attr(data-num);
+  position: absolute;
+  top: 2px; right: 4px;
+  font: 700 11px 'Fira Code', monospace;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0,0,0,0.6);
+}
+.node-badge[data-color="styleBlue"]   { background: var(--cat-blue);   }
+.node-badge[data-color="stylePurple"] { background: var(--cat-purple); }
+.node-badge[data-color="styleRed"]    { background: var(--cat-red);    }
+.node-badge[data-color="styleYellow"] { background: var(--cat-yellow); }
+.node-badge[data-color="styleGreen"]  { background: var(--cat-green);  }
+.node-badge[data-color="styleWhite"]  { background: var(--cat-white);  }
+.node-badge[data-color="styleGray"]   { background: var(--cat-gray);   }
+.node-badge[data-color="styleYellow"]::after,
+.node-badge[data-color="styleWhite"]::after {
+  color: #1e1e24;
+  text-shadow: 0 0 2px rgba(255,255,255,0.7);
 }
 
 /* --- Category Styles (tinted node bodies + vivid headers) --- */
@@ -243,7 +273,7 @@ svg#connections path.temp {
 /* ---- Node Description ---- */
 .node-desc { padding: 4px 10px 6px; }
 .node-desc textarea {
-  width: 100%; min-width: 180px; min-height: 36px; resize: both;
+  width: 100%; min-width: 120px; min-height: 36px; resize: both;
   background: var(--bg-base); color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xs); padding: 4px 6px;
