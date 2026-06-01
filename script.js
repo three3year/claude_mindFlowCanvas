@@ -488,7 +488,7 @@ let _portCtxRow = null;
 let _hoveredPortRow = null;
 let _hoveredHeaderTitle = null;
 
-const BADGE_COLORS = ['styleBlue','stylePurple','styleRed','styleYellow','styleGreen','styleWhite','styleGray'];
+const BADGE_COLORS = ['styleWhite','styleRed','styleYellow','styleGreen','styleBlue','stylePurple','styleGray'];
 
 function setNodeBadge(node, value) {
   const badge = node.querySelector('.node-badge');
