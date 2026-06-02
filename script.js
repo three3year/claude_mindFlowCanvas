@@ -200,6 +200,22 @@ let selectedNodes = new Set();
 let boxSelect = null;
 const selectBox = document.getElementById('select-box');
 
+/* ---- Mode System ---- */
+const MODE_DEFAULT_PORTS = {
+  '預設':   [{ label: 'Port 1', mode: 'both' }],
+  '遊戲王': [
+    { label: '目標', mode: 'both' },
+    { label: '代價', mode: 'both' },
+    { label: '效果', mode: 'both' }
+  ]
+};
+const MODE_STORAGE_KEY = 'mindFlowCanvas.mode';
+let currentMode = '預設';
+try {
+  const saved = localStorage.getItem(MODE_STORAGE_KEY);
+  if (saved && MODE_DEFAULT_PORTS[saved]) currentMode = saved;
+} catch (_) {}
+
 /* ---- Node Name Validation ---- */
 function getNodeType(node) {
   return node.dataset.category || '';
@@ -348,9 +364,21 @@ function createNode(title, inputs, outputs, opts) {
 /* ---- Add Blank Node ---- */
 function addBlankNode(category) {
   const cat = category || 'styleBlue';
-  const node = createNode(`節點 ${nodeCount + 1}`, [], [], { category: cat, ports: [{ label: 'Port 1', mode: 'both' }] });
+  const defaultPorts = MODE_DEFAULT_PORTS[currentMode] || MODE_DEFAULT_PORTS['預設'];
+  const ports = defaultPorts.map(p => ({ ...p }));
+  const node = createNode(`節點 ${nodeCount + 1}`, [], [], { category: cat, ports });
   return node;
 }
+
+/* ---- Mode Selector Init ---- */
+const modeSelectEl = document.getElementById('mode-select');
+modeSelectEl.value = currentMode;
+modeSelectEl.addEventListener('change', () => {
+  const next = modeSelectEl.value;
+  if (!MODE_DEFAULT_PORTS[next]) return;
+  currentMode = next;
+  try { localStorage.setItem(MODE_STORAGE_KEY, currentMode); } catch (_) {}
+});
 
 /* ---- Add / Remove Ports ---- */
 function addPort(node, nodeId, labelText, mode) {

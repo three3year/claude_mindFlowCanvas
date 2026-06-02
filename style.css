@@ -115,6 +115,35 @@ body {
   width: 14px; height: 14px; border-radius: 50%; display: inline-block;
 }
 
+/* ---- Mode Section ---- */
+#mode-section {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 10px 4px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+#mode-section .section-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-secondary); font-weight: 600; font-size: 13px;
+  font-family: 'Fira Sans', sans-serif;
+  white-space: nowrap;
+}
+#mode-select {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+#mode-select:hover { border-color: var(--text-muted); }
+#mode-select:focus { border-color: var(--accent); }
+
 /* ---- Help Button ---- */
 #help-btn {
   width: 32px; height: 32px;
