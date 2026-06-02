@@ -233,43 +233,48 @@ function isNodeNameTaken(name, nodeType, excludeNodeId) {
 }
 
 /* ---- Inline Editing ---- */
+function startEditable(el) {
+  if (el.querySelector('input')) return;
+  const old = el.textContent;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = old;
+  input.style.cssText = `
+    width: ${Math.max(el.offsetWidth, 40)}px; font: inherit; color: #F8FAFC;
+    background: #0F172A; border: 1px solid #22C55E; border-radius: 4px;
+    padding: 0 2px; outline: none; text-align: inherit;
+  `;
+  el.textContent = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = input.value.trim() || el.dataset.defaultText;
+    const node = el.closest('.node');
+    if (node && el.classList.contains('header-title')) {
+      const nodeType = getNodeType(node);
+      if (val !== old && isNodeNameTaken(val, nodeType, node.id)) {
+        input.style.borderColor = '#EF4444';
+        input.title = '同類別已有相同名稱';
+        input.focus();
+        return;
+      }
+    }
+    el.textContent = val;
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') input.blur();
+    if (ev.key === 'Escape') { input.value = old; input.blur(); }
+  });
+}
+
 function makeEditable(el, defaultText) {
   el.dataset.defaultText = defaultText;
   el.addEventListener('dblclick', e => {
     e.stopPropagation();
-    const old = el.textContent;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = old;
-    input.style.cssText = `
-      width: ${Math.max(el.offsetWidth, 40)}px; font: inherit; color: #F8FAFC;
-      background: #0F172A; border: 1px solid #22C55E; border-radius: 4px;
-      padding: 0 2px; outline: none; text-align: inherit;
-    `;
-    el.textContent = '';
-    el.appendChild(input);
-    input.focus();
-    input.select();
-
-    const commit = () => {
-      const val = input.value.trim() || el.dataset.defaultText;
-      const node = el.closest('.node');
-      if (node && el.classList.contains('header-title')) {
-        const nodeType = getNodeType(node);
-        if (val !== old && isNodeNameTaken(val, nodeType, node.id)) {
-          input.style.borderColor = '#EF4444';
-          input.title = '同類別已有相同名稱';
-          input.focus();
-          return;
-        }
-      }
-      el.textContent = val;
-    };
-    input.addEventListener('blur', commit);
-    input.addEventListener('keydown', ev => {
-      if (ev.key === 'Enter') input.blur();
-      if (ev.key === 'Escape') { input.value = old; input.blur(); }
-    });
+    startEditable(el);
   });
 }
 
@@ -1326,6 +1331,12 @@ document.addEventListener('keydown', e => {
     const modes = { '1': 'both', '2': 'left', '3': 'right', '4': 'none' };
     pushUndo();
     setPortRowMode(_hoveredPortRow, modes[k]);
+    return;
+  }
+  if (k === 'F2' && selectedNodes.size === 1) {
+    const node = [...selectedNodes][0];
+    const title = node.querySelector('.header-title');
+    if (title) { e.preventDefault(); startEditable(title); }
     return;
   }
   if (k === 'Delete' && selectedNodes.size > 0) { pushUndo(); deleteSelectedNodes(); return; }
